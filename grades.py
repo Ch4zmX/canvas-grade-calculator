@@ -27,6 +27,7 @@ def get_courses():
 
 def get_grades(course_id):
     json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/students/submissions", 
+                        params={'per_page': '100'},
                         headers={'Authorization': 'Bearer '+API_KEY}).json()
     return json
 
@@ -78,5 +79,6 @@ if __name__ == '__main__':
         #json.dump(grades, json_file)
     for grade in grades:
         assignment = get_assignment(grade['assignment_id'], course_ids[i])
+        # TODO add check for if assignment has grade, otherwise print --/score
         print(f"{assignment['name']:<75}{grade['score']}/{assignment['points_possible']:<25} Weight: {get_weight(grade['assignment_id'], course_ids[i])}")
     #print(grades)
