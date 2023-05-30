@@ -20,13 +20,20 @@ def getUserCoursesJSON(count = 10):
     #print(CANVAS + "/api/v1/courses")
     return json
 
-def getCourseAssignmentsJSON(course_id):
-    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments", 
+def getCourseAssignmentJSON(course_id, assignment_id):
+    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments/{assignment_id}", 
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     return json
 
-def getAssignmentJSON(course_id, assignment_id):
-    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments/{assignment_id}", 
+def getCourseAssignmentsJSON(course_id, ids: list = [], count = 100):
+    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments", 
+                        params={'per_page': count, 'assignment_ids[]': ids},
+                        headers={'Authorization': 'Bearer ' + API_KEY}).json()
+    return json
+
+def getUserGradesJSON(course_id, count = 100):
+    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/students/submissions", 
+                        params={'per_page': count},
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     return json
 
@@ -36,11 +43,8 @@ def getUserGradeJSON(course_id, assignment_id, count = 100):
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     return json
 
-def getAssignmentWeightJSON(course_id, weight_id):
-    '''json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments/{assignment_id}", 
-                        headers={'Authorization': 'Bearer ' + API_KEY}).json()
-    #print(json)
-    weight_id = json['assignment_group_id']'''
-    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignment_groups/{weight_id}", 
+def getAssignmentWeightsJSON(course_id, count = 100):
+    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignment_groups", 
+                        params={'per_page': count}, 
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     return json

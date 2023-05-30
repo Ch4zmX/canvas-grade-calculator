@@ -12,33 +12,58 @@ def storeKey(key: str):
 
 def print_grades(grades: dict[dict]):  
 
-    print(f'{"Assignment":<78}{"Grade":<25}{"Category":<50}{"Weight":<50}')
+    print(f'{"":<8}{"Assignment":<78}{"Grade":<25}{"Category":<50}{"Weight":<50}')
     for grade in grades.keys():
+        id = grade
         grade = grades[grade]
-        print(f"{grade['name'][:75]+('...' if len(grade['name']) > 75 else ''):<78}{grade['score']}/{grade['points']:<25}{grade['weight_group']:<50}{grade['weight']}")
+        print(f"{id}: {grade['name'][:75]+('...' if len(grade['name']) > 75 else ''):<78}{grade['score']}/{grade['points']:<25}{grade['weight_group']:<50}{grade['weight']}")
 
 if __name__ == '__main__':
 
     storeKey(canvas.API_KEY)
     print("User Courses Found: ")
-    for i, course in enumerate(json := canvas.getUserCoursesJSON(100)):
+    json = list(canvas.getUserCoursesJSON(100))
+    for i, course in enumerate(json):
         if 'name' in course:
             print(f"{str(i)+':':<3} {course['id']} - {course['name']}")
-    json = list(json)
+    
     course = json[int(input("Enter the index number corresponding to your class (e.g 1): "))]
 
+    weighted = bool(course['apply_assignment_group_weights'])
+    print("Course is weighted:", weighted)
     print(f"\nGetting grades for {course['name']}...\n")
 
-    assignmentsJSON, assignments = canvas.getCourseAssignmentsJSON(course['id']), {}
-    for assignment in assignmentsJSON: # store assignment name and points possible in a dictionary
-        weightsJSON = canvas.getAssignmentWeightJSON(course['id'], assignment['assignment_group_id'])
-        points = assignment['points_possible'] or '--'
-        assignments[assignment['id']] = {'assignment_id': assignment['id'], 'name': assignment['name'], 'points': points, 'weight_group': weightsJSON['name'], 'weight': weightsJSON['group_weight']}
-    gradesJSON = canvas.getUserGradeJSON(course['id'], assignments.keys())
+    gradesJSON = canvas.getUserGradesJSON(course['id'])
+    assignment_ids = []
+    grades = {}
 
-    for grade in gradesJSON: # print out and store the grade for each assignment
-        assignment_id = grade['assignment_id']
-        assignments[assignment_id]['score'] = grade['score'] or '--'
+    for grade in gradesJSON: # Initial loop to get all assignment ids, now we can just pass in a list of these ids to get only the assignments we want
+        assignment_ids.append(grade['assignment_id'])
+        if 'score' not in grade or grade['score'] is None:
+            grades[grade['assignment_id']] = {'score': '--'}
+            continue
+        grades[grade['assignment_id']] = {'score': grade['score']}
 
-    print_grades(assignments)
+    assignmentsJSON = canvas.getCourseAssignmentsJSON(59481, assignment_ids)
+
+    weights = {}
+    weightsJSON = canvas.getAssignmentWeightsJSON(59481)
+
+    for weight in weightsJSON:
+        weights[weight['id']] = {'name': weight['name'], 'weight': weight['group_weight'] if weighted else 1}
+
+
+    for assignment in assignmentsJSON:
+        weight_id = assignment['assignment_group_id']
+        
+        if assignment['points_possible'] is None:
+            points = '--'
+        else:
+            points = assignment['points_possible']
+        grades[assignment['id']]['points'] = points
+        grades[assignment['id']]['name'] = assignment['name']
+        grades[assignment['id']]['weight_group'] = weights[weight_id]['name']
+        grades[assignment['id']]['weight'] = weights[weight_id]['weight']
+
+    print_grades(grades)
     #print(weights)
