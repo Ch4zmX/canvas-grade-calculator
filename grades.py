@@ -1,4 +1,5 @@
 import canvas
+import os
 
 def storeKey(key: str):
     if not canvas.keyIsValid(key): # if the key is invalid, ask for a new one, and save it into env to store
