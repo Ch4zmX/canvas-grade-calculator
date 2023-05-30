@@ -1,6 +1,6 @@
 import canvas
 
-def storeKey(key):
+def storeKey(key: str):
     if not canvas.keyIsValid(key): # if the key is invalid, ask for a new one, and save it into env to store
             while not canvas.keyIsValid(key):
                 print("API Key is invalid!")
@@ -9,6 +9,13 @@ def storeKey(key):
             with open(".env", "w") as f:
                 os.putenv("TOKEN", key)
     print("API Key is valid! Continuing...")
+
+def print_grades(grades: dict[dict]):  
+
+    print(f'{"Assignment":<78}{"Grade":<25}{"Category":<50}{"Weight":<50}')
+    for grade in grades.keys():
+        grade = grades[grade]
+        print(f"{grade['name'][:75]+('...' if len(grade['name']) > 75 else ''):<78}{grade['score']}/{grade['points']:<25}{grade['weight_group']:<50}{grade['weight']}")
 
 if __name__ == '__main__':
 
@@ -22,18 +29,16 @@ if __name__ == '__main__':
 
     print(f"\nGetting grades for {course['name']}...\n")
 
-    json, assignments = canvas.getCourseAssignmentsJSON(course['id']), {}
-    for assignment in json: # store assignment name and points possible in a dictionary
-        assignments[assignment['id']] = assignment['name'], assignment['points_possible']
+    assignmentsJSON, assignments = canvas.getCourseAssignmentsJSON(course['id']), {}
+    for assignment in assignmentsJSON: # store assignment name and points possible in a dictionary
+        weightsJSON = canvas.getAssignmentWeightJSON(course['id'], assignment['assignment_group_id'])
+        points = assignment['points_possible'] or '--'
+        assignments[assignment['id']] = {'assignment_id': assignment['id'], 'name': assignment['name'], 'points': points, 'weight_group': weightsJSON['name'], 'weight': weightsJSON['group_weight']}
     gradesJSON = canvas.getUserGradeJSON(course['id'], assignments.keys())
-    weights = {}
-    
-    for assignment_id in assignments.keys(): # store assignment name and points possible in a dictionary
-        weightsJSON = canvas.getAssignmentWeightJSON(course['id'], assignment_id)
-        weights[assignment_id] =  weightsJSON['name'], weightsJSON['group_weight']
-    grades = {}
+
     for grade in gradesJSON: # print out and store the grade for each assignment
         assignment_id = grade['assignment_id']
-        grades[assignments[assignment_id][0]] = grade['score'], assignments[assignment_id][1], weights[assignment_id][1]
-        print(f"{assignments[grade['assignment_id']][0]}: {grade['score']} / {assignments[grade['assignment_id']][1]}")
-    print(grades)
+        assignments[assignment_id]['score'] = grade['score'] or '--'
+
+    print_grades(assignments)
+    #print(weights)

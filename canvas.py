@@ -36,11 +36,11 @@ def getUserGradeJSON(course_id, assignment_id, count = 100):
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     return json
 
-def getAssignmentWeightJSON(course_id, assignment_id):
-    json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments/{assignment_id}", 
+def getAssignmentWeightJSON(course_id, weight_id):
+    '''json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignments/{assignment_id}", 
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     #print(json)
-    weight_id = json['assignment_group_id']
+    weight_id = json['assignment_group_id']'''
     json = requests.get(CANVAS + f"/api/v1/courses/{course_id}/assignment_groups/{weight_id}", 
                         headers={'Authorization': 'Bearer ' + API_KEY}).json()
     return json
