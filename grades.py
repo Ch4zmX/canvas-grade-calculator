@@ -28,9 +28,9 @@ if __name__ == '__main__':
         if 'name' in course:
             print(f"{str(i)+':':<3} {course['id']} - {course['name']}")
             
-    course_id, course_name = course['id'], course['name']
-    course = json[int(input("Enter the index number corresponding to your class (e.g 1): "))]
     
+    course = json[int(input("Enter the index number corresponding to your class (e.g 1): "))]
+    course_id, course_name = course['id'], course['name']
 
     weighted = bool(course['apply_assignment_group_weights'])
     print("Course is weighted:", weighted)
