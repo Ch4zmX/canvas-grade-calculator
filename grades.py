@@ -27,36 +27,37 @@ if __name__ == '__main__':
     for i, course in enumerate(json):
         if 'name' in course:
             print(f"{str(i)+':':<3} {course['id']} - {course['name']}")
-    
+            
+    course_id, course_name = course['id'], course['name']
     course = json[int(input("Enter the index number corresponding to your class (e.g 1): "))]
+    
 
     weighted = bool(course['apply_assignment_group_weights'])
     print("Course is weighted:", weighted)
     print(f"\nGetting grades for {course['name']}...\n")
 
-    gradesJSON = canvas.getUserGradesJSON(course['id'])
+    gradesJSON = canvas.getUserGradesJSON(course_id)
     assignment_ids = []
     grades = {}
 
     for grade in gradesJSON: # Initial loop to get all assignment ids, now we can just pass in a list of these ids to get only the assignments we want
-        assignment_ids.append(grade['assignment_id'])
+        #assignment_ids.append(grade['assignment_id'])
         if 'score' not in grade or grade['score'] is None:
             grades[grade['assignment_id']] = {'score': '--'}
             continue
         grades[grade['assignment_id']] = {'score': grade['score']}
 
-    assignmentsJSON = canvas.getCourseAssignmentsJSON(59481, assignment_ids)
+    assignmentsJSON = canvas.getCourseAssignmentsJSON(course_id=course_id)
 
     weights = {}
-    weightsJSON = canvas.getAssignmentWeightsJSON(59481)
+    weightsJSON = canvas.getAssignmentWeightsJSON(course_id=course_id)
 
     for weight in weightsJSON:
         weights[weight['id']] = {'name': weight['name'], 'weight': weight['group_weight'] if weighted else 1}
 
-
     for assignment in assignmentsJSON:
         weight_id = assignment['assignment_group_id']
-        
+
         if assignment['points_possible'] is None:
             points = '--'
         else:
